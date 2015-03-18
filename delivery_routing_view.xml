@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <report
+        auto="False"
+        id="account_invoices"
+        model="account.invoice"
+        name="fq.account.invoice"
+        rml="account/report/account_print_invoice.rml"
+        string="Invoices"
+	usage="default"
+       
+            />
+
+       <record id="delivery_routing_tree" model="ir.ui.view">
+		   <field name="name">delivery.routing.tree</field>
+		   <field name="model">delivery.routing</field>
+		   <field name="type">tree</field>
+		   <field name="arch" type="xml">
+			<tree  string="Routing" >
+				<field name="name"  />
+				<field name="route_name"  />
+				<field name="driver" />
+			</tree>
+		   </field>
+	</record>
+
+       <record id="delivery_routing_form" model="ir.ui.view">
+		   <field name="name">delivery.routing.form</field>
+		   <field name="model">delivery.routing</field>
+		   <field name="type">form</field>
+		   <field name="arch" type="xml">
+			<form  string="Routing" >
+			<button name="%(action_change_route_name)d" string="Update Route Name" type="action" class="oe_highlight"/>
+			   <newline/>
+			   <group col ="4" colspan="6" >
+			   
+			        <field name="id" invisible ="1" />
+			        <newline/>
+				<field name="name" />
+				<field name="route_name"  attrs="{'readonly': [('id','!=',False)]}"/>
+				<field name="driver" />
+				<field name="active" />
+				<newline/>
+				<field name="agents" colspan="4" attrs="{'readonly': [('id','=',False)]}"/>
+				
+				<newline/>
+				<field name="comment" colspan="4"/>
+			   </group>
+			</form>
+			</field>
+	</record>
+
+
+
+        <record id="action_delivery_routing_form" model="ir.actions.act_window">
+            <field name="name">Routing</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">delivery.routing</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            
+        </record>
+
+        <menuitem action="action_delivery_routing_form" id="menu_action_delivery_routing_form" parent="stock.menu_stock_warehouse_mgmt" sequence="10"/>
+
+
+<!-- code to set new route name -->
+
+	<record id="set_route_name_form" model="ir.ui.view">
+		   <field name="name">Set Route Name</field>
+		   <field name="model">set.route.name</field>
+		   <field name="type">form</field>
+		   <field name="arch" type="xml">
+		    <form  string="New Route Name to Set">
+		     <group col="6" colspan="6">
+		    	<field name="name" required="1"  />
+				<button  name="set_selected_route_name"  string="Set" type="object" icon="gtk-apply" confirm="Are you sure u want to set this as Route Name ?"/>
+              </group>
+		      <newline/>
+		      
+		      
+		    </form>
+		   </field>
+	</record>
+	
+
+	<record id="action_change_route_name" model="ir.actions.act_window">
+		    <field name="name">Set Route Name </field>
+		    <field name="type">ir.actions.act_window</field>
+		    <field name="res_model">set.route.name</field>
+		    <field name="view_type">form</field>
+		    <field name="view_mode">form</field>
+	            <field name="context">{'route_id':active_ids}</field>
+		    <field name="view_id" ref="set_route_name_form"/>  
+		    <field name="target">new</field>               
+                    
+        </record>
+        
+        
+        
+<!-- Sequence for Routing -->
+
+        <record id="sequence_do_routing_type" model="ir.sequence.type">
+            <field name="name">Routing Sequence</field>
+            <field name="code">delivery.route.id</field>
+        </record>
+        
+        <record id="sequence_do_routing" model="ir.sequence">
+            <field name="name">Sequence Routing</field>
+            <field name="code">delivery.route.id</field>
+            <field name="prefix">COPIA/ROUTE/</field>
+            <field name="padding">3</field>
+            <field name="number_increment">1</field>
+        </record>
+
+
+<!-- Inheriting Delivery form, tree and search view to add the new Routing field -->
+
+
+
+        <record id="view_delivery_order_inherit_routing" model="ir.ui.view">
+            <field name="name">stock.picking.form</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+                <field name="company_id" position="before">
+                   <!-- <field name="route_id1" invisible = "1"/>
+		    <field name="route"/> -->
+		    <field name="route_id"/>
+		    <field name="printed" readonly = "1"/>
+	          </field>
+            </field>
+        </record>
+
+    
+        <record id="view_stock_picking_inherit_tree" model="ir.ui.view">
+            <field name="name">stock.picking.tree.inherit</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.vpicktree"/>
+            <field name="arch" type="xml">
+                <field name="min_date" position="before">
+                   <!-- <field name="route_id1" invisible = "1"/>
+		    <field name="route"/> -->
+		   <field name="route_id"/>
+		    <field name="printed"/>
+                   
+               </field>
+            </field>
+        </record>
+   
+        <record id="stock_delivery_search_view_inherit" model="ir.ui.view">
+            <field name="name">stock.picking.internal.search.inherit</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_internal_search"/>
+            <field name="arch" type="xml">
+                <search string="Internal Picking List">
+
+                    <field name="route_id" string = "Route"/>
+                    <filter string="Route" icon="terp-gtk-jump-to-rtl" domain="" context="{'group_by':'route_id'}" />
+		   <filter string="Create Date" icon="terp-go-month" domain="" context="{'group_by':'date'}" />
+                   
+                </search>
+            </field>
+        </record>
+
+
+<!-- Inheriting Picklist form, tree and search view to add the new Routing field -->
+
+
+
+        <record id="view_stock_move_inherit_routing" model="ir.ui.view">
+            <field name="name">stock.move.form</field>
+            <field name="model">stock.move</field>
+            <field name="inherit_id" ref="stock.view_move_form"/>
+            <field name="arch" type="xml">
+                <field name="date_expected" position="before">
+
+                    <field name="route_id"/>
+               </field>
+            </field>
+        </record>
+
+    
+        <record id="view_stock_move_inherit_tree_routing" model="ir.ui.view">
+            <field name="name">stock.move.tree.inherit</field>
+            <field name="model">stock.move</field>
+            <field name="inherit_id" ref="stock.view_move_tree_reception_picking_pick_list"/>
+            <field name="arch" type="xml">
+                <field name="partner_id" position="after">
+
+		      <field name="route_id"/>                 
+               </field>
+            </field>
+        </record>
+        
+    
+    
+        <record id="stock_move_search_view_inherit_routing" model="ir.ui.view">
+            <field name="name">stock.move.search.inherit</field>
+            <field name="model">stock.move</field>
+            <field name="inherit_id" ref="stock.view_move_search"/>
+            <field name="arch" type="xml">
+                <search string="Stock Moves">
+                   <field name="route_id" string = "Route"/>
+                    <filter string="Route" icon="terp-gtk-jump-to-rtl" domain="" context="{'group_by':'route_id'}" />                   
+                </search>
+            </field>
+        </record>
+
+
+<!-- Inheriting Invoice form, tree and search view to add the new Routing field -->
+
+        <record id="view_account_invoice_inherit_form" model="ir.ui.view">
+            <field name="name">account.invoice.supplier.form</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_supplier_form"/>
+            <field name="arch" type="xml">
+                <field name="move_id" position="before">
+                   
+                    <field name="route_id"/>
+		   <field name="printed"/>
+                   
+               </field>
+            </field>
+        </record>
+
+        
+        <record id="view_account_invoice_inherit_tree" model="ir.ui.view">
+            <field name="name">account.invoice.tree.inherit</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_tree"/>
+            <field name="arch" type="xml">
+                <field name="partner_id" position="after">
+                    
+		 <field name="route_id"/>
+		    <field name="printed"/>
+	        </field>
+            </field>
+        </record>
+
+        <record id="view_account_supplier_invoice_inherit_tree" model="ir.ui.view">
+            <field name="name">account.invoice.supplier.tree.inherit</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="copia_accounting.supplier_invoice_tree"/>
+            <field name="arch" type="xml">
+                <field name="partner_id" position="after">
+                    
+		 <field name="route_id"/>
+		    <field name="printed"/>
+	        </field>
+            </field>
+        </record>
+
+
+        
+        <record id="account_invoice_search_view_inherit" model="ir.ui.view">
+            <field name="name">account.invoice.supplier.search.inherit</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+            <field name="arch" type="xml">
+                <search string="Search Invoice">
+                    <field name="route_id" string = "Route"/>
+                    <filter string="Route" icon="terp-gtk-jump-to-rtl" domain="" context="{'group_by':'route_id'}" />
+
+                </search>
+            </field>
+        </record>
+
+    </data>
+</openerp>
+

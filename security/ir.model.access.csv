@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_delivery_routing_stock_move_user,delivery.routing.stock.move user,model_delivery_routing,stock.group_stock_user,1,1,1,0
+access_delivery_routing_report_stock_move_manager,delivery.routing.stock.move manager,model_delivery_routing,stock.group_stock_manager,1,1,1,0
+access_routing_change_stock_move_manager,delivery.routing.stock.move manager,model_set_route_name,stock.group_stock_manager,1,1,1,1
